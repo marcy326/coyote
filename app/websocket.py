@@ -15,11 +15,17 @@ class ConnectionManager:
         self.active_connections[room_id].append(websocket)
 
     def disconnect(self, websocket: WebSocket, room_id: str):
-        self.active_connections[room_id].remove(websocket)
+        if room_id in self.active_connections:
+            self.active_connections[room_id].remove(websocket)
+            if not self.active_connections[room_id]:
+                del self.active_connections[room_id]
 
     async def broadcast(self, message: str, room_id: str):
-        for connection in self.active_connections[room_id]:
-            await connection.send_text(message)
+        if room_id in self.active_connections:
+            for connection in self.active_connections[room_id]:
+                await connection.send_text(message)
+        else:
+            print(f"No active WebSocket connections for room {room_id}")
 
 manager = ConnectionManager()
 
@@ -43,4 +49,4 @@ async def websocket_endpoint(websocket: WebSocket, room_id: str):
     except WebSocketDisconnect:
         manager.disconnect(websocket, room_id)
         print(f"WebSocket disconnected in room {room_id}")
-        await manager.broadcast(f"Player left the room", room_id)
+        await manager.broadcast(json.dumps({"type": "player_left"}), room_id)

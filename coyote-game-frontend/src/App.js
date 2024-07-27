@@ -1,22 +1,35 @@
-import React, { useEffect } from 'react';
-import { useSelector } from 'react-redux';
-import RoomCreation from './components/RoomCreation';
-import JoinRoom from './components/JoinRoom';
-import GameBoard from './components/GameBoard';
+import React, { useState } from 'react';
+import InitialScreen from './components/InitialScreen';
+import NameInputScreen from './components/NameInputScreen';
+import RoomScreen from './components/RoomScreen';
 
 function App() {
-  const { roomId, playerName } = useSelector((state) => state.game);
+  const [screen, setScreen] = useState('initial');
+  const [currentRoomId, setCurrentRoomId] = useState(null);
 
-  useEffect(() => {
-    console.log('Current roomId:', roomId); // Add this line
-  }, [roomId]);
+  const handleRoomCreated = (roomId) => {
+    setCurrentRoomId(roomId);
+    setScreen('nameInput');
+  };
+
+  const handleRoomJoined = (roomId) => {
+    setCurrentRoomId(roomId);
+    setScreen('nameInput');
+  };
+
+  const handleNameEntered = () => {
+    setScreen('room');
+  };
 
   return (
-    <div className="App p-4">
-      <h1 className="text-2xl mb-4">Coyote Game</h1>
-      {!roomId && <RoomCreation />}
-      {roomId && !playerName && <JoinRoom />}
-      {roomId && playerName && <GameBoard />}
+    <div className="App">
+      {screen === 'initial' && (
+        <InitialScreen onRoomCreated={handleRoomCreated} onRoomJoined={handleRoomJoined} />
+      )}
+      {screen === 'nameInput' && currentRoomId && (
+        <NameInputScreen roomId={currentRoomId} onNameEntered={handleNameEntered} />
+      )}
+      {screen === 'room' && currentRoomId && <RoomScreen roomId={currentRoomId} />}
     </div>
   );
 }

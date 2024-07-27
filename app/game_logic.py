@@ -4,10 +4,21 @@ from models import Room, Player, GameState
 def create_room(room_id: str) -> Room:
     return Room(id=room_id)
 
-def add_player(room: Room, player_name: str) -> Room:
-    if any(p.name == player_name for p in room.players):
-        raise ValueError("Player name already exists in the room")
-    room.players.append(Player(name=player_name))
+def add_player(room: Room, player_name: str, player_id: str) -> Room:
+    existing_player = next((p for p in room.players if p.id == player_id), None)
+    
+    if existing_player:
+        # 既存のプレイヤーが存在する場合、名前を更新
+        existing_player.name = player_name
+    else:
+        # 新しいプレイヤーを追加
+        new_player = Player(id=player_id, name=player_name)
+        if len(room.players) >= 10:
+            raise ValueError("Room is full")
+        if any(p.id == player_id for p in room.players):
+            raise ValueError("Player ID already exists")
+        room.players.append(new_player)
+
     return room
 
 def start_game(game_state: GameState) -> GameState:

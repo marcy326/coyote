@@ -2,32 +2,33 @@ import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
   roomId: null,
-  playerName: null,
+  playerName: '',
   players: [],
   gameStarted: false,
-  currentTurn: null,
-  currentCard: null,
+  currentTurn: '',
+  currentCard: ''
 };
 
-export const gameSlice = createSlice({
+const gameSlice = createSlice({
   name: 'game',
   initialState,
   reducers: {
-    setRoomId: (state, action) => {
+    setRoomId(state, action) {
       state.roomId = action.payload;
     },
-    setPlayerName: (state, action) => {
+    setPlayerName(state, action) {
       state.playerName = action.payload;
     },
-    updateGameState: (state, action) => {
-      return { ...state, ...action.payload, gameStarted: true };
-    },
-    updatePlayers: (state, action) => {
+    updatePlayers(state, action) {
       state.players = action.payload;
     },
-  },
+    updateGameState(state, action) {
+      state.gameStarted = action.payload.gameStarted;
+      state.currentTurn = action.payload.currentTurn;
+      state.currentCard = action.payload.currentCard;
+    }
+  }
 });
 
-export const { setRoomId, setPlayerName, updateGameState, updatePlayers } = gameSlice.actions;
-
+export const { setRoomId, setPlayerName, updatePlayers, updateGameState } = gameSlice.actions;
 export default gameSlice.reducer;

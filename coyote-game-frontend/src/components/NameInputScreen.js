@@ -1,39 +1,36 @@
-// JoinRoom.js
 import React, { useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { setPlayerName, setRoomId } from '../store/gameSlice';
+import { useDispatch } from 'react-redux';
+import { setPlayerName } from '../store/gameSlice';
 import axios from 'axios';
 
-const JoinRoom = () => {
+const NameInputScreen = ({ roomId, onNameEntered }) => {
   const [name, setName] = useState('');
-  const [roomId, setRoomId] = useState('');
+  const [error, setError] = useState('');
   const dispatch = useDispatch();
-  const existingRoomId = useSelector((state) => state.game.roomId);
 
   const joinRoom = async () => {
     try {
-      await axios.post(`http://localhost:8000/room/${roomId}/join?player_name=${name}`);
+      await axios.post(`http://localhost:8000/room/${roomId}/join`, null, {
+        params: { player_name: name },
+        withCredentials: true
+      });
       dispatch(setPlayerName(name));
-      dispatch(setRoomId(roomId));
+      onNameEntered();
     } catch (error) {
       console.error('Error joining room:', error);
+      setError('Room is full or other error occurred');
     }
   };
 
   return (
     <div className="p-4">
+      <h2 className="text-xl mb-4">Enter your name for Room {roomId}</h2>
+      {error && <p className="text-red-500">{error}</p>}
       <input
         type="text"
         value={name}
         onChange={(e) => setName(e.target.value)}
         placeholder="Enter your name"
-        className="border p-2 mr-2"
-      />
-      <input
-        type="text"
-        value={roomId}
-        onChange={(e) => setRoomId(e.target.value)}
-        placeholder="Enter Room ID"
         className="border p-2 mr-2"
       />
       <button onClick={joinRoom} className="bg-green-500 text-white p-2 rounded">
@@ -43,4 +40,4 @@ const JoinRoom = () => {
   );
 };
 
-export default JoinRoom;
+export default NameInputScreen;
