@@ -1,8 +1,9 @@
 from fastapi import WebSocket, WebSocketDisconnect
 from typing import List, Dict
 import json
-from models import GameState
+from models import GameState, Room
 import game_logic
+import asyncio
 
 class ConnectionManager:
     def __init__(self):
@@ -28,25 +29,37 @@ class ConnectionManager:
             print(f"No active WebSocket connections for room {room_id}")
 
 manager = ConnectionManager()
+rooms = {}
 
 async def websocket_endpoint(websocket: WebSocket, room_id: str):
     await manager.connect(websocket, room_id)
     print(f"New WebSocket connection in room {room_id}")
     try:
+        if room_id not in rooms:
+            rooms[room_id] = Room(id=room_id)
         while True:
             data = await websocket.receive_text()
             print(f"Received message in room {room_id}: {data}")
-            game_state = GameState(room=rooms[room_id])
             action = json.loads(data)
             
-            if action["type"] == "play_turn":
-                try:
-                    game_state = game_logic.play_turn(game_state, action["player"], action["action"])
-                    rooms[room_id] = game_state.room
-                    await manager.broadcast(json.dumps(game_state.dict()), room_id)
-                except ValueError as e:
-                    await websocket.send_text(json.dumps({"error": str(e)}))
+            if action["type"] == "show_card":
+                print(f"Starting countdown for show_card in room {room_id}")
+                await manager.broadcast(json.dumps({"type": "show_card_countdown", "countdown": 5}), room_id)
+                for i in range(4, 0, -1):
+                    await asyncio.sleep(1)
+                    await manager.broadcast(json.dumps({"type": "show_card_countdown", "countdown": i}), room_id)
+                await asyncio.sleep(1)
+                print(f"Broadcasting show_card in room {room_id}")
+                await manager.broadcast(json.dumps({"type": "show_card"}), room_id)
+            elif action["type"] == "coyote":
+                print(f"Broadcasting coyote in room {room_id}")
+                total_value = action["totalValue"]
+                print(f"Total value: {total_value}")
+                await manager.broadcast(json.dumps({"type": "coyote", "totalValue": total_value}), room_id)
     except WebSocketDisconnect:
         manager.disconnect(websocket, room_id)
         print(f"WebSocket disconnected in room {room_id}")
-        await manager.broadcast(json.dumps({"type": "player_left"}), room_id)
+        try:
+            await manager.broadcast(json.dumps({"type": "player_left"}), room_id)
+        except WebSocketDisconnect:
+            pass

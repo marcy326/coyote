@@ -64,7 +64,6 @@ async def join_room(
         print(f"Error joining room: {str(e)}")  # デバッグ用ログ
         raise HTTPException(status_code=400, detail=str(e))
 
-
 @app.post("/room/{room_id}/start")
 async def start_game(room_id: str):
     print(f"Received request to start game in room {room_id}")
@@ -74,10 +73,10 @@ async def start_game(room_id: str):
     game_state = GameState(room=rooms[room_id])
     try:
         game_state = game_logic.start_game(game_state)
+        rooms[room_id] = game_state.room
     except ValueError as e:
         print(f"Error starting game: {str(e)}")
         raise HTTPException(status_code=400, detail=str(e))
-    rooms[room_id] = game_state.room
     print(f"Game started in room {room_id}")
     # WebSocket接続を通じて全プレイヤーに通知
     message = json.dumps({"type": "game_started", "game_state": game_state.dict()})
@@ -85,12 +84,24 @@ async def start_game(room_id: str):
     await manager.broadcast(message, room_id)
     return {"message": "Game started successfully"}
 
+@app.get("/room/{room_id}/cards")
+async def get_cards(room_id: str):
+    if room_id not in rooms:
+        raise HTTPException(status_code=404, detail="Room does not exist")
+    game_state = GameState(room=rooms[room_id])
+    return {"cards": [{"playerName": player.name, "card": player.card} for player in game_state.room.players]}
 
+@app.post("/room/{room_id}/coyote")
+async def end_game(room_id: str):
+    if room_id not in rooms:
+        raise HTTPException(status_code=404, detail="Room does not exist")
+    game_state = GameState(room=rooms[room_id])
+    total_value = game_state.room.total_value
+    return {"totalValue": total_value}
 
 @app.websocket("/ws/{room_id}")
 async def websocket_endpoint(websocket: WebSocket, room_id: str):
     await ws_endpoint(websocket, room_id)
-
 
 @app.get("/room/{room_id}/players")
 async def get_players(room_id: str):

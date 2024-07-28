@@ -5,14 +5,13 @@ from typing import List, Optional
 class Player(BaseModel):
     id: str
     name: str
-    score: int = Field(default=0)
-    current_card: Optional[int] = None
+    card: Optional[int] = None
 
 class Room(BaseModel):
     id: str
     players: List[Player] = Field(default_factory=list)
     game_started: bool = False
-    current_turn: Optional[str] = None
+    total_value: int = 0
 
 class GameState(BaseModel):
     room: Room

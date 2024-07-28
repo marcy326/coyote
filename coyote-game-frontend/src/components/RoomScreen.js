@@ -1,10 +1,10 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { updatePlayers, setPlayerName } from '../store/gameSlice';
+import { updatePlayers, setPlayerName, updateGameState } from '../store/gameSlice';
 import axios from 'axios';
 import { v4 as uuidv4 } from 'uuid';
 
-const RoomScreen = ({ roomId }) => {
+const RoomScreen = ({ roomId, onStartGame }) => {
   const dispatch = useDispatch();
   const players = useSelector((state) => state.game.players);
   const playerName = useSelector((state) => state.game.playerName);
@@ -24,41 +24,49 @@ const RoomScreen = ({ roomId }) => {
   }, [dispatch, roomId]);
 
   useEffect(() => {
-    const playerId = localStorage.getItem('playerId') || uuidv4();
-    localStorage.setItem('playerId', playerId);
+    if (roomId) {
+      const playerId = localStorage.getItem('playerId') || uuidv4();
+      localStorage.setItem('playerId', playerId);
 
-    wsRef.current = new WebSocket(`ws://localhost:8000/ws/${roomId}?playerId=${playerId}`);
+      wsRef.current = new WebSocket(`ws://localhost:8000/ws/${roomId}?playerId=${playerId}`);
 
-    wsRef.current.onopen = () => {
-      console.log('WebSocket connected');
-    };
+      wsRef.current.onopen = () => {
+        console.log('WebSocket connected');
+      };
 
-    wsRef.current.onmessage = (event) => {
-      console.log('Received WebSocket message:', event.data);
-      const data = JSON.parse(event.data);
-      if (data.type === 'player_joined') {
-        dispatch(updatePlayers(data.players));
-      }
-    };
+      wsRef.current.onmessage = (event) => {
+        console.log('Received WebSocket message:', event.data);
+        const data = JSON.parse(event.data);
+        if (data.type === 'player_joined') {
+          dispatch(updatePlayers(data.players));
+        } else if (data.type === 'game_started') {
+          dispatch(updateGameState(data.game_state));
+          onStartGame(); // ゲーム開始メッセージを受信したら画面遷移
+        }
+      };
 
-    wsRef.current.onerror = (error) => {
-      console.error('WebSocket error:', error);
-    };
+      wsRef.current.onerror = (error) => {
+        console.error('WebSocket error:', error);
+      };
 
-    wsRef.current.onclose = () => {
-      console.log('WebSocket disconnected');
-    };
+      wsRef.current.onclose = () => {
+        console.log('WebSocket disconnected');
+      };
 
-    return () => {
-      wsRef.current.close();
-    };
-  }, [roomId, dispatch]);
+      return () => {
+        wsRef.current.close();
+      };
+    }
+  }, [roomId, dispatch, onStartGame]);
 
   const startGame = async () => {
     try {
       const response = await axios.post(`http://localhost:8000/room/${roomId}/start`);
       if (response.data.error) {
         setError(response.data.error);
+      } else {
+        setError(null); // エラーがない場合はエラーをクリア
+        onStartGame(); // onStartGame()を呼び出す
       }
     } catch (error) {
       console.error('Error starting game:', error);
