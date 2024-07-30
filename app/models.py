@@ -11,6 +11,7 @@ class Room(BaseModel):
     id: str
     players: List[Player] = Field(default_factory=list)
     game_started: bool = False
+    game_in_progress: bool = False
     total_value: int = 0
 
 class GameState(BaseModel):

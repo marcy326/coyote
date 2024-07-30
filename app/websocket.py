@@ -29,14 +29,11 @@ class ConnectionManager:
             print(f"No active WebSocket connections for room {room_id}")
 
 manager = ConnectionManager()
-rooms = {}
 
 async def websocket_endpoint(websocket: WebSocket, room_id: str):
     await manager.connect(websocket, room_id)
     print(f"New WebSocket connection in room {room_id}")
     try:
-        if room_id not in rooms:
-            rooms[room_id] = Room(id=room_id)
         while True:
             data = await websocket.receive_text()
             print(f"Received message in room {room_id}: {data}")
@@ -56,6 +53,14 @@ async def websocket_endpoint(websocket: WebSocket, room_id: str):
                 total_value = action["totalValue"]
                 print(f"Total value: {total_value}")
                 await manager.broadcast(json.dumps({"type": "coyote", "totalValue": total_value}), room_id)
+            elif action["type"] == "end_game":
+                print(f"Ending game in room {room_id}")
+                await manager.broadcast(json.dumps({"type": "game_ended"}), room_id)
+            elif action["type"] == "player_left":
+                print(f"Player left room {room_id}")
+                players = action["players"]
+                print(f"Players: {players}")
+                await manager.broadcast(json.dumps({"type": "player_left", "players": players}), room_id)
     except WebSocketDisconnect:
         manager.disconnect(websocket, room_id)
         print(f"WebSocket disconnected in room {room_id}")

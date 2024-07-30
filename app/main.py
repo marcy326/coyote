@@ -20,6 +20,7 @@ app.add_middleware(
 # 仮のデータストア（実際のアプリケーションでは適切なデータストアを使用してください）
 rooms = {}
 
+
 @app.post("/room")
 async def create_room():
     room_id = str(uuid.uuid4())  # UUIDを生成
@@ -53,16 +54,44 @@ async def join_room(
         room = game_logic.add_player(room, player_name, player_id)
         rooms[room_id] = room
 
+        message = {
+            "type": "player_joined",
+            "players": [p.dict() for p in room.players],
+            "gameInProgress": room.game_in_progress  # ゲーム状態を追加
+        }
+
+        print(f"Room {room_id} state: gameInProgress = {room.game_in_progress}")
+
         # WebSocketを通じて全プレイヤーに更新を通知
         if room_id in manager.active_connections:
-            await manager.broadcast(json.dumps({"type": "player_joined", "players": [p.dict() for p in room.players]}), room_id)
+            await manager.broadcast(json.dumps(message), room_id)
         else:
             print(f"No active WebSocket connections for room {room_id}")
 
-        return {"message": "Joined room successfully"}
+        return {"message": "Joined room successfully", "gameInProgress": room.game_in_progress}
     except ValueError as e:
         print(f"Error joining room: {str(e)}")  # デバッグ用ログ
         raise HTTPException(status_code=400, detail=str(e))
+
+@app.post("/room/{room_id}/leave")
+async def leave_room(room_id: str, player_id: str = Cookie(default=None)):
+    if room_id not in rooms:
+        raise HTTPException(status_code=404, detail="部屋が存在しません")
+    if not player_id:
+        raise HTTPException(status_code=400, detail="プレイヤーIDが必要です")
+    
+    room = rooms[room_id]
+    player = next((p for p in room.players if p.id == player_id), None)
+    if not player:
+        raise HTTPException(status_code=404, detail="プレイヤーが見つかりません")
+    
+    room = game_logic.delete_player(room, player_id)
+    rooms[room_id] = room
+    
+    # WebSocketを通じて全プレイヤーに更新を通知
+    await manager.broadcast(json.dumps({"type": "player_left", "players": [p.dict() for p in room.players]}), room_id)
+    
+    return {"message": "部屋から退出しました"}
 
 @app.post("/room/{room_id}/start")
 async def start_game(room_id: str):
@@ -84,6 +113,14 @@ async def start_game(room_id: str):
     await manager.broadcast(message, room_id)
     return {"message": "Game started successfully"}
 
+@app.get("/room/{room_id}/players")
+async def get_players(room_id: str):
+    if room_id not in rooms:
+        raise HTTPException(status_code=404, detail="Room does not exist")
+    room = rooms[room_id]
+    players = [player.dict() for player in room.players]
+    return {"players": players, "gameInProgress": room.game_in_progress}
+
 @app.get("/room/{room_id}/cards")
 async def get_cards(room_id: str):
     if room_id not in rooms:
@@ -92,20 +129,26 @@ async def get_cards(room_id: str):
     return {"cards": [{"playerName": player.name, "card": player.card} for player in game_state.room.players]}
 
 @app.post("/room/{room_id}/coyote")
-async def end_game(room_id: str):
+async def result(room_id: str):
     if room_id not in rooms:
         raise HTTPException(status_code=404, detail="Room does not exist")
     game_state = GameState(room=rooms[room_id])
     total_value = game_state.room.total_value
     return {"totalValue": total_value}
 
+@app.post("/room/{room_id}/end_game")
+async def end_game(room_id: str):
+    if room_id not in rooms:
+        raise HTTPException(status_code=404, detail="Room does not exist")
+    game_state = GameState(room=rooms[room_id])
+    game_state.room.game_started = False
+    game_state.room.game_in_progress = False
+    rooms[room_id] = game_state.room
+    await manager.broadcast(json.dumps({"type": "game_ended"}), room_id)
+    return {"message": "Game ended successfully"}
+
 @app.websocket("/ws/{room_id}")
 async def websocket_endpoint(websocket: WebSocket, room_id: str):
     await ws_endpoint(websocket, room_id)
 
-@app.get("/room/{room_id}/players")
-async def get_players(room_id: str):
-    if room_id not in rooms:
-        raise HTTPException(status_code=404, detail="Room does not exist")
-    players = [player.dict() for player in rooms[room_id].players]
-    return {"players": players}
+

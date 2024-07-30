@@ -21,11 +21,16 @@ def add_player(room: Room, player_name: str, player_id: str) -> Room:
 
     return room
 
+def delete_player(room: Room, player_id: str) -> Room:
+    room.players = [p for p in room.players if p.id != player_id]
+    return room
+
 def start_game(game_state: GameState) -> GameState:
     if len(game_state.room.players) < 2:
         raise ValueError("At least 2 players are required to start the game")
     
     game_state.room.game_started = True
+    game_state.room.game_in_progress = True
     random.shuffle(game_state.deck)
     
     # 各プレイヤーにカードを配る
@@ -33,5 +38,12 @@ def start_game(game_state: GameState) -> GameState:
         player.card = game_state.deck.pop()
 
     game_state.room.total_value = sum(player.card for player in game_state.room.players if player.card is not None)
+    
+    return game_state
+
+def end_game(game_state: GameState) -> GameState:
+    game_state.room.game_started = False
+    game_state.room.game_in_progress = False  # この行を追加
+    # ... その他のゲーム終了処理 ...
     
     return game_state
