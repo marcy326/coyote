@@ -1,4 +1,5 @@
 import random
+import string
 from models import Room, Player, GameState
 
 def create_room(room_id: str) -> Room:
@@ -47,3 +48,8 @@ def end_game(game_state: GameState) -> GameState:
     # ... その他のゲーム終了処理 ...
     
     return game_state
+
+def generate_room_id(length=8):
+    """指定された長さのランダムな英数字のroom IDを生成する"""
+    characters = string.ascii_letters + string.digits
+    return ''.join(random.choice(characters) for _ in range(length))

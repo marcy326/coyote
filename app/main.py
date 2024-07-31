@@ -4,7 +4,6 @@ from models import Room, Player, GameState
 import game_logic
 from websocket import websocket_endpoint as ws_endpoint, manager
 import json
-import uuid
 
 app = FastAPI()
 
@@ -23,7 +22,7 @@ rooms = {}
 
 @app.post("/room")
 async def create_room():
-    room_id = str(uuid.uuid4())  # UUIDを生成
+    room_id = game_logic.generate_room_id()
     print(f"Creating room with ID: {room_id}")
     if room_id in rooms:
         raise HTTPException(status_code=400, detail="Room already exists")
