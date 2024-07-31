@@ -126,7 +126,7 @@ async def get_cards(room_id: str):
     if room_id not in rooms:
         raise HTTPException(status_code=404, detail="Room does not exist")
     game_state = GameState(room=rooms[room_id])
-    return {"cards": [{"playerName": player.name, "card": player.card} for player in game_state.room.players]}
+    return {"cards": [{"playerName": player.name, "card": player.card.value} for player in game_state.room.players]}
 
 @app.post("/room/{room_id}/coyote")
 async def result(room_id: str):
