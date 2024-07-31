@@ -5,6 +5,7 @@ import axios from 'axios';
 
 const InitialScreen = ({ onRoomCreated, onRoomJoined }) => {
   const [roomIdInput, setRoomIdInput] = useState('');
+  const [error, setError] = useState('');
   const dispatch = useDispatch();
 
   const createRoom = async () => {
@@ -15,12 +16,21 @@ const InitialScreen = ({ onRoomCreated, onRoomJoined }) => {
       onRoomCreated(roomId);
     } catch (error) {
       console.error('Error creating room:', error);
+      setError('部屋の作成に失敗しました。もう一度お試しください。');
     }
   };
 
-  const joinRoom = () => {
-    dispatch(setRoomId(roomIdInput));
-    onRoomJoined(roomIdInput);
+  const joinRoom = async () => {
+    try {
+      const response = await axios.get(`http://localhost:8000/room/${roomIdInput}/players`);
+      if (response.status === 200) {
+        dispatch(setRoomId(roomIdInput));
+        onRoomJoined(roomIdInput);
+      }
+    } catch (error) {
+      console.error('部屋への参加中にエラーが発生しました:', error);
+      setError('指定された部屋が存在しません。部屋IDを確認してください。');
+    }
   };
 
   return (
@@ -40,6 +50,7 @@ const InitialScreen = ({ onRoomCreated, onRoomJoined }) => {
       <button onClick={joinRoom} className="bg-green-500 text-white p-2 rounded">
         Join Room
       </button>
+      {error && <p className="text-red-500 mt-2">{error}</p>}
     </div>
   );
 };
