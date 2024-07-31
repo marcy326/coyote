@@ -4,6 +4,7 @@ from models import Room, Player, GameState
 import game_logic
 from websocket import websocket_endpoint as ws_endpoint, manager
 import json
+import uuid
 
 app = FastAPI()
 
