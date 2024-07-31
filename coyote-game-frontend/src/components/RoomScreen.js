@@ -10,6 +10,7 @@ const RoomScreen = ({ roomId, onStartGame, onLeaveRoom }) => {
   const playerName = useSelector((state) => state.game.playerName);
   const gameInProgress = useSelector((state) => state.game.gameInProgress);
   const [error, setError] = useState(null);
+  const [copySuccess, setCopySuccess] = useState('');
   const wsRef = useRef(null);
 
   const leaveRoom = async () => {
@@ -99,11 +100,30 @@ const RoomScreen = ({ roomId, onStartGame, onLeaveRoom }) => {
     }
   };
 
+  const copyRoomId = () => {
+    navigator.clipboard.writeText(roomId).then(() => {
+      setCopySuccess('コピーしました！');
+      setTimeout(() => setCopySuccess(''), 2000); // 2秒後にメッセージを消す
+    }, (err) => {
+      console.error('Could not copy text: ', err);
+      setCopySuccess('コピーに失敗しました');
+    });
+  };
+
   console.log(`Rendering RoomScreen: gameInProgress = ${gameInProgress}`);
 
   return (
     <div className="p-4">
       <h2 className="text-xl mb-4">部屋 {roomId}</h2>
+      <div className="flex items-center mb-4">
+        <button
+          onClick={copyRoomId}
+          className="bg-blue-500 text-white p-2 rounded mr-2"
+        >
+          IDをコピー
+        </button>
+        {copySuccess && <span className="text-green-500">{copySuccess}</span>}
+      </div>
       <div className="mt-4">
         <h3 className="text-lg mb-2">部屋内のプレイヤー:</h3>
         {players && players.length > 0 ? (
