@@ -21,6 +21,8 @@ services:
   envVars:
     - key: DATABASE_URL
       value: sqlite:///sqlite.db
+    - key: FRONTEND_ORIGIN
+      sync: false
   region: oregon
   dockerContext: .
   dockerfilePath: ./Dockerfile
