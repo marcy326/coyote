@@ -42,6 +42,11 @@ async def join_room(
         print(f"Room {room_id} does not exist")  # デバッグ用ログ
         raise HTTPException(status_code=404, detail="Room does not exist")
     
+    if player_name.strip() == "":
+        raise HTTPException(status_code=400, detail="名前は空白だけではいけません")
+    if len(player_name) > 20:
+        raise HTTPException(status_code=400, detail="名前は20文字以下で入力してください")
+    
     # プレイヤーIDがCookieにない場合、新しく生成してCookieに設定
     if not player_id:
         player_id = str(uuid.uuid4())
@@ -134,7 +139,7 @@ async def result(room_id: str):
         raise HTTPException(status_code=404, detail="Room does not exist")
     game_state = GameState(room=rooms[room_id])
     total_value = game_state.room.total_value
-    return {"totalValue": total_value}
+    return {"totalValue": total_value, "topCard": game_state.room.top_card.value}
 
 @app.post("/room/{room_id}/end_game")
 async def end_game(room_id: str):
@@ -149,6 +154,19 @@ async def end_game(room_id: str):
 
 @app.websocket("/ws/{room_id}")
 async def websocket_endpoint(websocket: WebSocket, room_id: str):
-    await ws_endpoint(websocket, room_id)
-
+    await manager.connect(websocket, room_id)
+    player_id = websocket.cookies.get("player_id")  # プレイヤーIDを取得
+    try:
+        while True:
+            data = await websocket.receive_text()
+            # 受信したメッセージの処理
+    except WebSocketDisconnect:
+        # 接続が切れた場合の処理
+        await manager.disconnect(websocket, room_id)
+        # ここで部屋から退出させるロジックを追加
+        room = rooms[room_id]
+        room = game_logic.delete_player(room, player_id)  # プレイヤーを削除
+        rooms[room_id] = room
+        await manager.broadcast(json.dumps({"type": "player_left", "players": [p.dict() for p in room.players]}), room_id)
+    
 

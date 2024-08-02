@@ -9,6 +9,14 @@ const NameInputScreen = ({ roomId, onNameEntered }) => {
   const dispatch = useDispatch();
 
   const joinRoom = async () => {
+    if (name.trim().length < 1) {
+      setError('名前は空白以外の1文字以上で1入力してください。');
+      return;
+    }
+    if (name.length > 20) {
+      setError('名前は20文字以下で入力してください。');
+      return;
+    }
     try {
       await axios.post(`http://localhost:8000/room/${roomId}/join`, null, {
         params: { player_name: name },
