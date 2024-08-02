@@ -20,7 +20,7 @@ const GameScreen = ({ roomId, onGameEnd }) => {
   useEffect(() => {
     const fetchCards = async () => {
       try {
-        const response = await axios.get(`http://localhost:8000/room/${roomId}/cards`);
+        const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/room/${roomId}/cards`);
         setCards(response.data.cards);
       } catch (error) {
         console.error('Error fetching cards:', error);
@@ -31,7 +31,7 @@ const GameScreen = ({ roomId, onGameEnd }) => {
   }, [roomId]);
 
   useEffect(() => {
-    wsRef.current = new WebSocket(`ws://localhost:8000/ws/${roomId}`);
+    wsRef.current = new WebSocket(`${process.env.REACT_APP_WS_BASE_URL}/ws/${roomId}`);
 
     wsRef.current.onopen = () => {
       console.log('WebSocket connected');
@@ -76,7 +76,7 @@ const GameScreen = ({ roomId, onGameEnd }) => {
 
   const handleCoyote = async () => {
     try {
-      const response = await axios.post(`http://localhost:8000/room/${roomId}/coyote`);
+      const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/room/${roomId}/coyote`);
       const data = response.data
       wsRef.current.send(JSON.stringify({ type: 'coyote', totalValue: data.totalValue, topCard: data.topCard }));
     } catch (error) {
@@ -86,7 +86,7 @@ const GameScreen = ({ roomId, onGameEnd }) => {
 
   const handleGameEnd = async () => {
     try {
-      await axios.post(`http://localhost:8000/room/${roomId}/end_game`);
+      await axios.post(`${process.env.REACT_APP_API_BASE_URL}/room/${roomId}/end_game`);
       dispatch(setGameInProgress(false));
       wsRef.current.send(JSON.stringify({ type: 'end_game' }));
     } catch (error) {

@@ -10,7 +10,7 @@ const InitialScreen = ({ onRoomCreated, onRoomJoined }) => {
 
   const createRoom = async () => {
     try {
-      const response = await axios.post('http://localhost:8000/room');
+      const response = await axios.post('${process.env.REACT_APP_API_BASE_URL}/room');
       const roomId = response.data.room_id;
       dispatch(setRoomId(roomId));
       onRoomCreated(roomId);
@@ -22,7 +22,7 @@ const InitialScreen = ({ onRoomCreated, onRoomJoined }) => {
 
   const joinRoom = async () => {
     try {
-      const response = await axios.get(`http://localhost:8000/room/${roomIdInput}/players`);
+      const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/room/${roomIdInput}/players`);
       if (response.status === 200) {
         dispatch(setRoomId(roomIdInput));
         onRoomJoined(roomIdInput);

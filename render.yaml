@@ -1,0 +1,29 @@
+# Exported from Render on 2024-08-02T08:33:06Z
+services:
+- type: web
+  name: coyote
+  runtime: static
+  repo: https://github.com/marcy326/coyote
+  envVars:
+    - key: REACT_APP_API_BASE_URL      
+      sync: false
+    - key: REACT_APP_WS_BASE_URL
+      sync: false
+  buildCommand: yarn; yarn build
+  staticPublishPath: build
+  rootDir: coyote-game-frontend
+
+- type: web
+  name: coyote-backend
+  runtime: docker
+  repo: https://github.com/marcy326/coyote
+  plan: free
+  envVars:
+    - key: DATABASE_URL
+      value: sqlite:///sqlite.db
+  region: oregon
+  dockerContext: .
+  dockerfilePath: ./Dockerfile
+  rootDir: app
+
+version: "1"

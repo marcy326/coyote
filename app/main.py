@@ -5,13 +5,16 @@ import game_logic
 from websocket import websocket_endpoint as ws_endpoint, manager
 import json
 import uuid
+import os
 
 app = FastAPI()
+
+frontend_origin = os.getenv("FRONTEND_ORIGIN", "http://localhost:3000")
 
 # CORSミドルウェアを追加
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # Reactアプリのオリジン
+    allow_origins=[frontend_origin],  # Reactアプリのオリジン
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

@@ -28,7 +28,7 @@ const RoomScreen = ({ roomId, onStartGame, onLeaveRoom }) => {
   useEffect(() => {
     const fetchPlayers = async () => {
       try {
-        const response = await axios.get(`http://localhost:8000/room/${roomId}/players`);
+        const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/room/${roomId}/players`);
         dispatch(updatePlayers(response.data.players));
         dispatch(setGameInProgress(response.data.gameInProgress));
         console.log(`Fetched players for room ${roomId}: gameInProgress = ${response.data.gameInProgress}`);
@@ -42,7 +42,7 @@ const RoomScreen = ({ roomId, onStartGame, onLeaveRoom }) => {
       const playerId = localStorage.getItem('playerId') || uuidv4();
       localStorage.setItem('playerId', playerId);
 
-      wsRef.current = new WebSocket(`ws://localhost:8000/ws/${roomId}?playerId=${playerId}`);
+      wsRef.current = new WebSocket(`${process.env.REACT_APP_WS_BASE_URL}/ws/${roomId}?playerId=${playerId}`);
 
       wsRef.current.onopen = () => {
         console.log('WebSocket connected');
@@ -85,7 +85,7 @@ const RoomScreen = ({ roomId, onStartGame, onLeaveRoom }) => {
 
   const startGame = async () => {
     try {
-      const response = await axios.post(`http://localhost:8000/room/${roomId}/start`);
+      const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/room/${roomId}/start`);
       if (response.data.error) {
         setError(response.data.error);
       } else {

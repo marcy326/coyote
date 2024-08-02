@@ -18,7 +18,7 @@ const NameInputScreen = ({ roomId, onNameEntered }) => {
       return;
     }
     try {
-      await axios.post(`http://localhost:8000/room/${roomId}/join`, null, {
+      await axios.post(`${process.env.REACT_APP_API_BASE_URL}/room/${roomId}/join`, null, {
         params: { player_name: name },
         withCredentials: true
       });

@@ -5,6 +5,9 @@ services:
       dockerfile: Dockerfile
     ports:
       - "3000:3000"
+    environment:
+      - REACT_APP_API_BASE_URL=http://localhost:8000
+      - REACT_APP_WS_BASE_URL=ws://localhost:8000
     depends_on:
       - backend
 
@@ -15,12 +18,5 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - DATABASE_URL=postgresql://user:password@db:5432/mydatabase
-  
-  db:
-    image: postgres
-    restart: always
-    environment:
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: mydatabase
+      - FRONTEND_ORIGIN=http://localhost:3000
+      - DATABASE_URL=sqlite:///sqlite.db
