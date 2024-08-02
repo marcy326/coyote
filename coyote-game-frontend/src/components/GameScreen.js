@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
 import { useSelector, useDispatch } from 'react-redux';
 import { setGameInProgress } from '../store/gameSlice';
+import { ReducerType } from '@reduxjs/toolkit';
 
 const GameScreen = ({ roomId, onGameEnd }) => {
   const dispatch = useDispatch();
@@ -11,6 +12,7 @@ const GameScreen = ({ roomId, onGameEnd }) => {
   const [countdown, setCountdown] = useState(null);
   const [cardButtonVisible, setCardButtonVisible] = useState(true);
   const [coyoteButtonVisible, setCoyoteButtonVisible] = useState(false);
+  const [revealedCard, setRevealedCard] = useState(null);
   const [gameEndButtonVisible, setGameEndButtonVisible] = useState(false);
   const playerName = useSelector((state) => state.game.playerName);
   const wsRef = useRef(null);
@@ -49,6 +51,7 @@ const GameScreen = ({ roomId, onGameEnd }) => {
         setTotalValue(data.totalValue);
         setCoyoteButtonVisible(false);
         setGameEndButtonVisible(true);
+        setRevealedCard(data.topCard);
       } else if (data.type === 'game_ended') {
         onGameEnd();
       }
@@ -74,7 +77,8 @@ const GameScreen = ({ roomId, onGameEnd }) => {
   const handleCoyote = async () => {
     try {
       const response = await axios.post(`http://localhost:8000/room/${roomId}/coyote`);
-      wsRef.current.send(JSON.stringify({ type: 'coyote', totalValue: response.data.totalValue }));
+      const data = response.data
+      wsRef.current.send(JSON.stringify({ type: 'coyote', totalValue: data.totalValue, topCard: data.topCard }));
     } catch (error) {
       console.error('Error ending game:', error);
     }
@@ -113,6 +117,11 @@ const GameScreen = ({ roomId, onGameEnd }) => {
         <button onClick={handleCoyote} className="bg-red-500 text-white p-2 rounded mt-4">
           コヨーテ!
         </button>
+      )}
+      {revealedCard !== null && playerCard.card == '?' && (
+        <div className="mt-4">
+          <h3 className="text-lg mb-2">?→ {revealedCard}</h3>
+        </div>
       )}
       {totalValue !== null && (
         <div className="mt-4">

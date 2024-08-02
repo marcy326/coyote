@@ -51,8 +51,9 @@ async def websocket_endpoint(websocket: WebSocket, room_id: str):
             elif action["type"] == "coyote":
                 print(f"Broadcasting coyote in room {room_id}")
                 total_value = action["totalValue"]
+                top_card = action["topCard"]
                 print(f"Total value: {total_value}")
-                await manager.broadcast(json.dumps({"type": "coyote", "totalValue": total_value}), room_id)
+                await manager.broadcast(json.dumps({"type": "coyote", "totalValue": total_value, "topCard": top_card}), room_id)
             elif action["type"] == "end_game":
                 print(f"Ending game in room {room_id}")
                 await manager.broadcast(json.dumps({"type": "game_ended"}), room_id)

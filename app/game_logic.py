@@ -62,21 +62,22 @@ def start_game(game_state: GameState) -> GameState:
 def calculate_total_value(room: Room) -> int:
     total = 0
     max_value_to_zero = False
-    max_value = 0
+    max_value = -10
     multiply = False
 
     for player in room.players:
-        if player.card:
+        card = player.card
+        if card:
             if player.card.value == "?":
-                player.card = room.top_card
+                card = room.top_card
             
-            if player.card.value == "x2":
+            if card.value == "x2":
                 multiply = True
-            elif player.card.value == "MAX→0":
+            elif card.value == "MAX→0":
                 max_value_to_zero = True
-            elif isinstance(player.card.value, int):
-                total += player.card.value
-                max_value = max(max_value, player.card.value)
+            elif isinstance(card.value, int):
+                total += card.value
+                max_value = max(max_value, card.value)
 
     if max_value_to_zero:
         total -= max_value  # 最大値を0にする
@@ -94,5 +95,5 @@ def end_game(game_state: GameState) -> GameState:
 
 def generate_room_id(length=8):
     """指定された長さのランダムな英数字のroom IDを生成する"""
-    characters = string.ascii_letters + string.digits
+    characters = string.ascii_uppercase + string.digits
     return ''.join(random.choice(characters) for _ in range(length))
