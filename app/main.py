@@ -157,19 +157,5 @@ async def end_game(room_id: str):
 
 @app.websocket("/ws/{room_id}")
 async def websocket_endpoint(websocket: WebSocket, room_id: str):
-    await manager.connect(websocket, room_id)
-    player_id = websocket.cookies.get("player_id")  # プレイヤーIDを取得
-    try:
-        while True:
-            data = await websocket.receive_text()
-            # 受信したメッセージの処理
-    except WebSocketDisconnect:
-        # 接続が切れた場合の処理
-        await manager.disconnect(websocket, room_id)
-        # ここで部屋から退出させるロジックを追加
-        room = rooms[room_id]
-        room = game_logic.delete_player(room, player_id)  # プレイヤーを削除
-        rooms[room_id] = room
-        await manager.broadcast(json.dumps({"type": "player_left", "players": [p.dict() for p in room.players]}), room_id)
+    await ws_endpoint(websocket, room_id)
     
-

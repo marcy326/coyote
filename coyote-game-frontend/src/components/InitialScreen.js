@@ -10,7 +10,7 @@ const InitialScreen = ({ onRoomCreated, onRoomJoined }) => {
 
   const createRoom = async () => {
     try {
-      const response = await axios.post('${process.env.REACT_APP_API_BASE_URL}/room');
+      const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/room`);
       const roomId = response.data.room_id;
       dispatch(setRoomId(roomId));
       onRoomCreated(roomId);

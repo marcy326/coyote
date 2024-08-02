@@ -71,7 +71,12 @@ const GameScreen = ({ roomId, onGameEnd }) => {
   }, [roomId, onGameEnd]);
 
   const handleShowCard = () => {
-    wsRef.current.send(JSON.stringify({ type: 'show_card' }));
+    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+      wsRef.current.send(JSON.stringify({ type: 'show_card' }));
+      console.log('Sent show_card message');
+    } else {
+      console.error('WebSocket is not open');
+    }
   };
 
   const handleCoyote = async () => {

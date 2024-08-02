@@ -65,7 +65,3 @@ async def websocket_endpoint(websocket: WebSocket, room_id: str):
     except WebSocketDisconnect:
         manager.disconnect(websocket, room_id)
         print(f"WebSocket disconnected in room {room_id}")
-        try:
-            await manager.broadcast(json.dumps({"type": "player_left"}), room_id)
-        except WebSocketDisconnect:
-            pass
