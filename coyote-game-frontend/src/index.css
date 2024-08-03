@@ -180,7 +180,7 @@ input::placeholder {
 }
 
 .card-value {
-  font-size: clamp(4rem, -1.818rem + 29.09vw, 20rem); /* Use clamp to adjust font size */
+  font-size: clamp(4rem, 1.538rem + 12.31vw, 20rem); /* Use clamp to adjust font size */
   font-weight: bold;
   text-align: center;
   margin-top: 2rem;
@@ -190,7 +190,7 @@ input::placeholder {
 }
 
 .countdown {
-  font-size: clamp(4rem, -1.818rem + 29.09vw, 20rem); /* Use clamp to adjust font size */
+  font-size: clamp(4rem, 1.538rem + 12.31vw, 20rem); /* Use clamp to adjust font size */
   font-weight: bold;
   text-align: center;
   margin-top: 2rem;
