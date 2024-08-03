@@ -31,19 +31,23 @@ const NameInputScreen = ({ roomId, onNameEntered }) => {
   };
 
   return (
-    <div className="p-4">
-      <h2 className="text-xl mb-4">Enter your name for Room {roomId}</h2>
-      {error && <p className="text-red-500">{error}</p>}
-      <input
-        type="text"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-        placeholder="Enter your name"
-        className="border p-2 mr-2"
-      />
-      <button onClick={joinRoom} className="bg-green-500 text-white p-2 rounded">
-        Join Room
-      </button>
+    <div className="container">
+      <div className="header">
+        <h2 className="text-xl mb-4">Enter your name for Room {roomId}</h2>
+      </div>
+      <div className="card">
+        {error && <p className="text-red">{error}</p>}
+        <input
+          type="text"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="Enter your name"
+          className="border p-2 mr-2"
+        />
+        <button onClick={joinRoom} className="bg-green text-white p-2 rounded">
+          Join Room
+        </button>
+      </div>
     </div>
   );
 };

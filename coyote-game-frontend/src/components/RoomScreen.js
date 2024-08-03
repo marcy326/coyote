@@ -64,9 +64,9 @@ const RoomScreen = ({ roomId, onStartGame, onLeaveRoom }) => {
           console.log('Game started: gameInProgress set to true');
           onStartGame(); // ゲーム開始メッセージを受信したら画面遷移
         } else if (data.type === 'game_ended') {
-        dispatch(setGameInProgress(false));
-        console.log('Game ended: gameInProgress set to false');
-      }
+          dispatch(setGameInProgress(false));
+          console.log('Game ended: gameInProgress set to false');
+        }
       };
 
       wsRef.current.onerror = (error) => {
@@ -113,45 +113,49 @@ const RoomScreen = ({ roomId, onStartGame, onLeaveRoom }) => {
   console.log(`Rendering RoomScreen: gameInProgress = ${gameInProgress}`);
 
   return (
-    <div className="p-4">
-      <h2 className="text-xl mb-4">部屋 {roomId}</h2>
-      <div className="flex items-center mb-4">
+    <div className="container">
+      <div className="header">
+        <h2 className="text-xl mb-4">Waiting Room: {roomId}</h2>
+      </div>
+      <div className="card">
         <button
           onClick={copyRoomId}
-          className="bg-blue-500 text-white p-2 rounded mr-2"
+          className="bg-blue text-white p-2 rounded"
         >
           IDをコピー
         </button>
-        {copySuccess && <span className="text-green-500">{copySuccess}</span>}
-      </div>
-      <div className="mt-4">
-        <h3 className="text-lg mb-2">部屋内のプレイヤー:</h3>
-        {players && players.length > 0 ? (
-          <ul>
-            {players.map((player, index) => (
-              <li key={player.id || index}>{player.name}</li>
-            ))}
-          </ul>
-        ) : (
-          <p>プレイヤーはまだいません。</p>
-        )}
-        <p>プレイヤー数: {players ? players.length : 0}</p>
-        {error && <div className="text-red-500">{error}</div>}
-        <button
-          onClick={startGame}
-          className={`bg-green-500 text-white p-2 rounded mt-4 ${(players.length < 2 || gameInProgress) ? 'opacity-50 cursor-not-allowed' : ''}`}
-          disabled={!players || players.length < 2 || gameInProgress}
-        >
-          ゲーム開始
-        </button>
-        {gameInProgress && <div className="text-yellow-500 mt-2">ゲームが進行中です</div>}
-        {(!players || players.length < 2) && <div className="text-yellow-500 mt-2">ゲームを開始するには最低2人のプレイヤーが必要です</div>}
-        <button
-          onClick={leaveRoom}
-          className="bg-red-500 text-white p-2 rounded mt-4 ml-4"
-        >
-          部屋を退出
-        </button>
+        {copySuccess && <span className="text-green">{copySuccess}</span>}
+        <div className="mt-4">
+          <h3 className="text-lg mb-2">部屋内のプレイヤー:</h3>
+          {players && players.length > 0 ? (
+            <ul>
+              {players.map((player, index) => (
+                <li key={player.id || index}>{player.name}</li>
+              ))}
+            </ul>
+          ) : (
+            <p>プレイヤーはまだいません。</p>
+          )}
+          <p>プレイヤー数: {players ? players.length : 0}</p>
+          {error && <div className="text-red">{error}</div>}
+          <div className="button-group">
+            <button
+              onClick={startGame}
+              className={`bg-green text-white p-2 rounded ${(players.length < 2 || gameInProgress) ? 'opacity-50 cursor-not-allowed' : ''}`}
+              disabled={!players || players.length < 2 || gameInProgress}
+            >
+              ゲーム開始
+            </button>
+            <button
+              onClick={leaveRoom}
+              className="bg-red text-white p-2 rounded"
+            >
+              部屋を退出
+            </button>
+          </div>
+          {gameInProgress && <div className="text-yellow mt-2">ゲームが進行中です</div>}
+          {(!players || players.length < 2) && <div className="text-yellow mt-2">ゲームを開始するには最低2人のプレイヤーが必要です</div>}
+        </div>
       </div>
     </div>
   );

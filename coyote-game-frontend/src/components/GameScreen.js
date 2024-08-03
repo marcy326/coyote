@@ -2,7 +2,6 @@ import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
 import { useSelector, useDispatch } from 'react-redux';
 import { setGameInProgress } from '../store/gameSlice';
-import { ReducerType } from '@reduxjs/toolkit';
 
 const GameScreen = ({ roomId, onGameEnd }) => {
   const dispatch = useDispatch();
@@ -82,7 +81,7 @@ const GameScreen = ({ roomId, onGameEnd }) => {
   const handleCoyote = async () => {
     try {
       const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/room/${roomId}/coyote`);
-      const data = response.data
+      const data = response.data;
       wsRef.current.send(JSON.stringify({ type: 'coyote', totalValue: data.totalValue, topCard: data.topCard }));
     } catch (error) {
       console.error('Error ending game:', error);
@@ -102,42 +101,47 @@ const GameScreen = ({ roomId, onGameEnd }) => {
   const playerCard = cards.find(card => card.playerName === playerName);
 
   return (
-    <div className="p-4">
-      {cardButtonVisible && (
-        <button onClick={handleShowCard} className="bg-blue-500 text-white p-2 rounded mt-4">
-          Show My Card
-        </button>
-      )}
-      {countdown !== null && (
-        <div className="mt-4">
-          <p>{countdown}</p>
-        </div>
-      )}
-      {showCard && playerCard && (
-        <div className="mt-4">
-          <p>{playerCard.card}</p>
-        </div>
-      )}
-      {coyoteButtonVisible && (
-        <button onClick={handleCoyote} className="bg-red-500 text-white p-2 rounded mt-4">
-          コヨーテ!
-        </button>
-      )}
-      {revealedCard !== null && playerCard.card == '?' && (
-        <div className="mt-4">
-          <h3 className="text-lg mb-2">?→ {revealedCard}</h3>
-        </div>
-      )}
-      {totalValue !== null && (
-        <div className="mt-4">
-          <h3 className="text-lg mb-2">Total Value of Cards: {totalValue}</h3>
-        </div>
-      )}
-      {gameEndButtonVisible && (
-        <button onClick={handleGameEnd} className="bg-green-500 text-white p-2 rounded mt-4">
-          ゲーム終了
-        </button>
-      )}
+    <div className="container">
+      <div className="header">
+        <h2 className="text-xl mb-4">Game Room {roomId}</h2>
+      </div>
+      <div className="card">
+        {cardButtonVisible && (
+          <button onClick={handleShowCard} className="bg-blue text-white p-2 rounded mt-4">
+            Show Card
+          </button>
+        )}
+        {countdown !== null && (
+          <div className="countdown">
+            <p>{countdown}</p>
+          </div>
+        )}
+        {showCard && playerCard && (
+          <div className="card-value">
+            <p>{playerCard.card}</p>
+          </div>
+        )}
+        {coyoteButtonVisible && (
+          <button onClick={handleCoyote} className="bg-red text-white p-2 rounded mt-4">
+            コヨーテ!
+          </button>
+        )}
+        {revealedCard !== null && playerCard.card == '?' && (
+          <div className="mt-4">
+            <h3 className="text-lg mb-2">?→ {revealedCard}</h3>
+          </div>
+        )}
+        {totalValue !== null && (
+          <div className="mt-4">
+            <h3 className="text-lg mb-2">合計: {totalValue}</h3>
+          </div>
+        )}
+        {gameEndButtonVisible && (
+          <button onClick={handleGameEnd} className="bg-green text-white p-2 rounded mt-4">
+            ゲーム終了
+          </button>
+        )}
+      </div>
     </div>
   );
 };
