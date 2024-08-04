@@ -57,7 +57,7 @@ input::placeholder {
 }
 
 .container {
-  max-width: 600px;
+  max-width: 1000px;
   margin: 0 auto;
   padding: 1rem;
 }
@@ -180,20 +180,18 @@ input::placeholder {
 }
 
 .card-value {
-  font-size: clamp(4rem, 1.538rem + 12.31vw, 20rem); /* Use clamp to adjust font size */
+  font-size: clamp(7rem, 18vw, 10rem); /* Use clamp to adjust font size */
   font-weight: bold;
   text-align: center;
-  margin-top: 2rem;
   color: #f5f5f5;
   max-width: 100%;
   word-wrap: break-word;
 }
 
 .countdown {
-  font-size: clamp(4rem, 1.538rem + 12.31vw, 20rem); /* Use clamp to adjust font size */
+  font-size: clamp(7rem, 18vw, 10rem); /* Use clamp to adjust font size */
   font-weight: bold;
   text-align: center;
-  margin-top: 2rem;
   color: #ff6347; /* Tomato color for countdown */
   max-width: 100%;
   word-wrap: break-word;

@@ -103,7 +103,7 @@ const GameScreen = ({ roomId, onGameEnd }) => {
   return (
     <div className="container">
       <div className="header">
-        <h2 className="text-xl mb-4">Game Room {roomId}</h2>
+        <h2 className="text-xl mb-4">Game Room: {roomId}</h2>
       </div>
       <div className="card">
         {cardButtonVisible && (
