@@ -23,6 +23,9 @@ app.add_middleware(
 # 仮のデータストア（実際のアプリケーションでは適切なデータストアを使用してください）
 rooms = {}
 
+@app.post("/health")
+def healthcheck():
+    return {"message": "healthy"}
 
 @app.post("/room")
 async def create_room():
