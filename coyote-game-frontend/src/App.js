@@ -4,7 +4,8 @@ import { setRoomId, resetGame } from './store/gameSlice';
 import InitialScreen from './components/InitialScreen';
 import NameInputScreen from './components/NameInputScreen';
 import RoomScreen from './components/RoomScreen';
-import GameScreen from './components/GameScreen';
+import OfflineGameScreen from './components/OfflineGameScreen';
+import OnlineGameScreen from './components/OnlineGameScreen';
 
 function App() {
   const [screen, setScreen] = useState('initial');
@@ -31,8 +32,12 @@ function App() {
     setScreen('room');
   };
 
-  const handleGameStarted = () => {
-    setScreen('game');
+  const handleOfflineGameStarted = () => {
+    setScreen('offlineGame');
+  };
+
+  const handleOnlineGameStarted = () => {
+    setScreen('onlineGame');
   };
 
   const handleGameEnded = () => {
@@ -56,12 +61,19 @@ function App() {
       {screen === 'room' && currentRoomId && (
         <RoomScreen
           roomId={currentRoomId}
-          onStartGame={handleGameStarted}
+          onStartOfflineGame={handleOfflineGameStarted}
+          onStartOnlineGame={handleOnlineGameStarted}
           onLeaveRoom={handleLeaveRoom}
         />
       )}
-      {screen === 'game' && currentRoomId && (
-        <GameScreen
+      {screen === 'offlineGame' && currentRoomId && (
+        <OfflineGameScreen
+          roomId={currentRoomId}
+          onGameEnd={handleGameEnded}
+        />
+      )}
+      {screen === 'onlineGame' && currentRoomId && (
+        <OnlineGameScreen
           roomId={currentRoomId}
           onGameEnd={handleGameEnded}
         />

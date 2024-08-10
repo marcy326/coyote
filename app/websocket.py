@@ -48,12 +48,23 @@ async def websocket_endpoint(websocket: WebSocket, room_id: str):
                 await asyncio.sleep(1)
                 print(f"Broadcasting show_card in room {room_id}")
                 await manager.broadcast(json.dumps({"type": "show_card"}), room_id)
+            elif action["type"] == "bid":
+                print(f"Broadcasting bid in room {room_id}")
+                bidding_num = action["biddingNum"]
+                next_turn = action["next_turn"]
+                print(f"Bidding Number: {bidding_num}")
+                await manager.broadcast(json.dumps({"type": "bid", "biddingNum": bidding_num, "nextTurn": next_turn}), room_id)
             elif action["type"] == "coyote":
                 print(f"Broadcasting coyote in room {room_id}")
                 total_value = action["totalValue"]
                 top_card = action["topCard"]
                 print(f"Total value: {total_value}")
                 await manager.broadcast(json.dumps({"type": "coyote", "totalValue": total_value, "topCard": top_card}), room_id)
+            elif action["type"] == "coyote_online":
+                print(f"Broadcasting coyote in room {room_id}")
+                result = action["result"]
+                print(f"Result: {result}")
+                await manager.broadcast(json.dumps({"type": "coyote", "result": result}), room_id)
             elif action["type"] == "end_game":
                 print(f"Ending game in room {room_id}")
                 await manager.broadcast(json.dumps({"type": "game_ended"}), room_id)

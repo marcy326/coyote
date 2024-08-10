@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { setPlayerName } from '../store/gameSlice';
 import axios from 'axios';
@@ -6,7 +6,21 @@ import axios from 'axios';
 const NameInputScreen = ({ roomId, onNameEntered }) => {
   const [name, setName] = useState('');
   const [error, setError] = useState('');
+  const [existingPlayers, setExistingPlayers] = useState([]);
   const dispatch = useDispatch();
+
+  useEffect(() => {
+    const fetchPlayers = async () => {
+      try {
+        const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/room/${roomId}/players`);
+        setExistingPlayers(response.data.players);
+      } catch (error) {
+        console.error('Error fetching players:', error);
+      }
+    };
+
+    fetchPlayers();
+  }, [roomId]);
 
   const joinRoom = async () => {
     if (name.trim().length < 1) {
@@ -15,6 +29,10 @@ const NameInputScreen = ({ roomId, onNameEntered }) => {
     }
     if (name.length > 20) {
       setError('名前は20文字以下で入力してください。');
+      return;
+    }
+    if (existingPlayers.some(player => player.name === name)) {
+      setError('この名前は既に使用されています。別の名前を入力してください。');
       return;
     }
     try {

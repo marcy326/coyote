@@ -1,4 +1,4 @@
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, Request, Response, Depends, Cookie, Query
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, Request, Response, Depends, Cookie, Query, Body
 from fastapi.middleware.cors import CORSMiddleware
 from models import Room, Player, GameState
 import game_logic
@@ -6,6 +6,7 @@ from websocket import websocket_endpoint as ws_endpoint, manager
 import json
 import uuid
 import os
+import random
 
 app = FastAPI()
 
@@ -104,9 +105,32 @@ async def leave_room(room_id: str, player_id: str = Cookie(default=None)):
     
     return {"message": "部屋から退出しました"}
 
-@app.post("/room/{room_id}/start")
+@app.post("/room/{room_id}/start_offline")
 async def start_game(room_id: str):
     print(f"Received request to start game in room {room_id}")
+    if room_id not in rooms:
+        print(f"Room {room_id} does not exist")
+        raise HTTPException(status_code=404, detail="Room does not exist")
+    game_state = GameState(room=rooms[room_id])
+    try:
+        game_state = game_logic.start_game(game_state)
+        rooms[room_id] = game_state.room
+        player_ids = [player.id for player in game_state.room.players]
+        random.shuffle(player_ids)
+        game_state.room.random_order = player_ids
+    except ValueError as e:
+        print(f"Error starting game: {str(e)}")
+        raise HTTPException(status_code=400, detail=str(e))
+    print(f"Game started in room {room_id}")
+    # WebSocket接続を通じて全プレイヤーに通知
+    message = json.dumps({"type": "offlinegame_started", "game_state": game_state.dict(), "random_order": player_ids})
+    print(f"Broadcasting message: {message}")
+    await manager.broadcast(message, room_id)
+    return {"message": "Game started successfully"}
+
+@app.post("/room/{room_id}/start_online")
+async def start_online_game(room_id: str):
+    print(f"Received request to start online game in room {room_id}")
     if room_id not in rooms:
         print(f"Room {room_id} does not exist")
         raise HTTPException(status_code=404, detail="Room does not exist")
@@ -117,12 +141,24 @@ async def start_game(room_id: str):
     except ValueError as e:
         print(f"Error starting game: {str(e)}")
         raise HTTPException(status_code=400, detail=str(e))
-    print(f"Game started in room {room_id}")
-    # WebSocket接続を通じて全プレイヤーに通知
-    message = json.dumps({"type": "game_started", "game_state": game_state.dict()})
+    print(f"Online game started in room {room_id}")
+    message = json.dumps({"type": "onlinegame_started", "game_state": game_state.dict()})
     print(f"Broadcasting message: {message}")
     await manager.broadcast(message, room_id)
-    return {"message": "Game started successfully"}
+    return {"message": "Online game started successfully"}
+
+@app.post("/room/{room_id}/bid")
+async def place_bid(room_id: str, bid: int = Body(..., embed=True)):
+    if room_id not in rooms:
+        raise HTTPException(status_code=404, detail="Room does not exist")
+    game_state = GameState(room=rooms[room_id])
+    game_state.room.last_bid = bid
+    next_turn = game_logic.get_next_turn(game_state.room)
+    game_state.room.current_turn = next_turn
+    message = json.dumps({"type": "bid", "biddingNum": bid, "nextTurn": next_turn})
+    print(f"Broadcasting message: {message}")  # デバッグ用ログ
+    await manager.broadcast(message, room_id)
+    return {"message": "Bid placed successfully"}
 
 @app.get("/room/{room_id}/players")
 async def get_players(room_id: str):
@@ -147,6 +183,25 @@ async def result(room_id: str):
     total_value = game_state.room.total_value
     return {"totalValue": total_value, "topCard": game_state.room.top_card.value}
 
+@app.post("/room/{room_id}/coyote_online")
+async def declare_coyote(room_id: str):
+    if room_id not in rooms:
+        raise HTTPException(status_code=404, detail="Room does not exist")
+    game_state = GameState(room=rooms[room_id])
+    total_value = game_state.room.total_value
+    last_bid = game_state.room.last_bid
+    if last_bid > total_value:
+        result = "success"
+        prev_turn = game_logic.get_previous_turn(game_state.room)
+        order = game_state.room.random_order
+        loser = game_state.room.players[order[prev_turn]].name
+    else:
+        result = "failure"
+        loser = game_state.room.players[game_state.room.current_turn].name
+    message = json.dumps({"type": "coyote", "result": result, "totalValue": total_value, "loser": loser})
+    await manager.broadcast(message, room_id)
+    return {"message": "Coyote declared", "result": result, "totalValue": total_value, "loser": loser}
+
 @app.post("/room/{room_id}/end_game")
 async def end_game(room_id: str):
     if room_id not in rooms:
@@ -161,4 +216,3 @@ async def end_game(room_id: str):
 @app.websocket("/ws/{room_id}")
 async def websocket_endpoint(websocket: WebSocket, room_id: str):
     await ws_endpoint(websocket, room_id)
-    

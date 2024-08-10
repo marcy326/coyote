@@ -56,8 +56,24 @@ def start_game(game_state: GameState) -> GameState:
     game_state.room.top_card = game_state.deck.pop()
 
     game_state.room.total_value = calculate_total_value(game_state.room)
+    game_state.room.last_bid = 0
+    game_state.room.current_turn = 0
+    print(f"Game started: current_turn = {game_state.room.current_turn}") 
+    # ランダムな順番のリストを生成
+    order = [i for i in range(len(game_state.room.players))]
+    random.shuffle(order)
+    game_state.room.random_order = order
+    
     
     return game_state
+
+def get_next_turn(room: Room) -> int:
+    next_turn = (room.current_turn + 1) % len(room.players)
+    return next_turn
+
+def get_previous_turn(room: Room) -> int:
+    previous_turn = (room.current_turn - 1) % len(room.players)
+    return previous_turn
 
 def calculate_total_value(room: Room) -> int:
     total = 0

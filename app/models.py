@@ -17,6 +17,9 @@ class Room(BaseModel):
     game_started: bool = False
     game_in_progress: bool = False
     total_value: int = 0
+    last_bid: int = 0
+    current_turn: int = 0
+    random_order: List = []
 
 class GameState(BaseModel):
     room: Room

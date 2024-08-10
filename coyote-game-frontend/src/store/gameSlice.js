@@ -6,8 +6,11 @@ const initialState = {
   players: [],
   gameStarted: false,
   gameInProgress: false,
-  currentTurn: '',
-  currentCard: ''
+  currentTurn: 0,
+  lastBid: 0,
+  biddingNum: 1,
+  coyoteResult: null,
+  randomOrder: [],
 };
 
 const gameSlice = createSlice({
@@ -19,6 +22,9 @@ const gameSlice = createSlice({
     },
     setPlayerName(state, action) {
       state.playerName = action.payload;
+    },
+    setCurrentTurn(state, action) {
+      state.currentTurn = action.payload;
     },
     updatePlayers(state, action) {
       // プレイヤーリストが配列であることを確認
@@ -39,16 +45,35 @@ const gameSlice = createSlice({
       state.players = state.players.filter(player => player.id !== playerId);
     },
     updateGameState(state, action) {
-      state.gameStarted = action.payload.gameStarted;
-      state.gameInProgress = action.payload.gameInProgress;
-      state.currentTurn = action.payload.currentTurn;
-      state.currentCard = action.payload.currentCard;
+      const { room } = action.payload.game_state;
+      state.players = room.players;
+      state.currentTurn = room.current_turn;
+      state.gameStarted = room.game_started;
+      state.gameInProgress = room.game_in_progress;
+      state.currentTurn = room.current_turn;
+      state.lastBid = room.last_bid;
+      state.randomOrder = room.random_order;
     },
     setGameInProgress(state, action) {
       state.gameInProgress = action.payload;
     },
+    setLastBid(state, action) {
+      state.lastBid = action.payload;
+    },
+    setBiddingNum(state, action) {
+      state.biddingNum = action.payload;
+    },
+    setCoyoteResult(state, action) { // コヨーテの結果を設定するためのアクションを追加
+      state.coyoteResult = action.payload;
+    },
     resetGame(state) {
-      return initialState;
+      state.gameStarted = false;
+      state.gameInProgress = false;
+      state.currentTurn = 0;
+      state.lastBid = 0;
+      state.biddingNum = 1;
+      state.coyoteResult = null;
+      state.randomOrder = [];
     }
   }
 });
@@ -56,11 +81,15 @@ const gameSlice = createSlice({
 export const {
   setRoomId,
   setPlayerName,
+  setCurrentTurn,
   updatePlayers,
   addPlayer,
   removePlayer,
   updateGameState,
   setGameInProgress,
+  setLastBid,
+  setBiddingNum,
+  setCoyoteResult,
   resetGame
 } = gameSlice.actions;
 

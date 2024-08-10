@@ -1,14 +1,16 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { updatePlayers, setPlayerName, updateGameState, setRoomId, setGameInProgress } from '../store/gameSlice';
+import { updatePlayers, setPlayerName, updateGameState, setRoomId, setGameInProgress, setCurrentTurn } from '../store/gameSlice';
 import axios from 'axios';
 import { v4 as uuidv4 } from 'uuid';
 
-const RoomScreen = ({ roomId, onStartGame, onLeaveRoom }) => {
+const RoomScreen = ({ roomId, onStartOfflineGame, onStartOnlineGame, onLeaveRoom }) => {
   const dispatch = useDispatch();
   const players = useSelector((state) => state.game.players);
   const playerName = useSelector((state) => state.game.playerName);
   const gameInProgress = useSelector((state) => state.game.gameInProgress);
+  const currentTurn = useSelector((state) => state.game.currentTurn);
+  const randomOrder = useSelector((state) => state.game.randomOrder);
   const [error, setError] = useState(null);
   const [copySuccess, setCopySuccess] = useState('');
   const wsRef = useRef(null);
@@ -58,11 +60,15 @@ const RoomScreen = ({ roomId, onStartGame, onLeaveRoom }) => {
             dispatch(setGameInProgress(data.gameInProgress));
             console.log(`Updated gameInProgress: ${data.gameInProgress}`); 
           }
-        } else if (data.type === 'game_started') {
-          dispatch(updateGameState(data.game_state));
+        } else if (data.type === 'offlinegame_started') {
+          dispatch(updateGameState(data));
           dispatch(setGameInProgress(true));
           console.log('Game started: gameInProgress set to true');
-          onStartGame(); // ゲーム開始メッセージを受信したら画面遷移
+          onStartOfflineGame(); // ゲーム開始メッセージを受信したら画面遷移
+        } else if (data.type === 'onlinegame_started') {
+          dispatch(updateGameState(data));
+          console.log('Game started: gameInProgress set to true');
+          onStartOnlineGame(); // ゲーム開始メッセージを受信したら画面遷移
         } else if (data.type === 'game_ended') {
           dispatch(setGameInProgress(false));
           console.log('Game ended: gameInProgress set to false');
@@ -81,18 +87,35 @@ const RoomScreen = ({ roomId, onStartGame, onLeaveRoom }) => {
         wsRef.current.close();
       };
     }
-  }, [roomId, dispatch, onStartGame]);
+  }, [roomId, dispatch, onStartOfflineGame, onStartOnlineGame]);
 
-  const startGame = async () => {
+  const startOfflineGame = async () => {
     try {
-      const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/room/${roomId}/start`);
+      const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/room/${roomId}/start_offline`);
       if (response.data.error) {
         setError(response.data.error);
       } else {
         setError(null); // エラーがない場合はエラーをクリア
         dispatch(setGameInProgress(true));
         console.log('Game started: gameInProgress set to true');
-        onStartGame(); // onStartGame()を呼び出す
+        onStartOfflineGame(); // onStartGame()を呼び出す
+      }
+    } catch (error) {
+      console.error('Error starting game:', error);
+      setError('Failed to start the game. Please try again.');
+    }
+  };
+
+  const startOnlineGame = async () => {
+    try {
+      const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/room/${roomId}/start_online`);
+      if (response.data.error) {
+        setError(response.data.error);
+      } else {
+        setError(null); // エラーがない場合はエラーをクリア
+        dispatch(setGameInProgress(true));
+        console.log('Game started: gameInProgress set to true');
+        onStartOnlineGame(); // onStartGame()を呼び出す
       }
     } catch (error) {
       console.error('Error starting game:', error);
@@ -140,11 +163,18 @@ const RoomScreen = ({ roomId, onStartGame, onLeaveRoom }) => {
           {error && <div className="text-red">{error}</div>}
           <div className="button-group">
             <button
-              onClick={startGame}
+              onClick={startOfflineGame}
               className={`bg-green text-white p-2 rounded ${(players.length < 2 || gameInProgress) ? 'opacity-50 cursor-not-allowed' : ''}`}
               disabled={!players || players.length < 2 || gameInProgress}
             >
-              ゲーム開始
+              オフラインゲーム開始
+            </button>
+            <button
+              onClick={startOnlineGame}
+              className={`bg-blue text-white p-2 rounded ${(players.length < 2 || gameInProgress) ? 'opacity-50 cursor-not-allowed' : ''}`}
+              disabled={!players || players.length < 2 || gameInProgress}
+            >
+              オンラインゲーム開始
             </button>
             <button
               onClick={leaveRoom}
