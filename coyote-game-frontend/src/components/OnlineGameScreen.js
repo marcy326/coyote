@@ -76,7 +76,7 @@ const OnlineGameScreen = ({ roomId, onGameEnd }) => {
 
   const handleCoyote = async () => {
     try {
-      const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/room/${roomId}/coyote_online`, { bid: biddingNum });
+      const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/room/${roomId}/coyote_online`);
       console.log('Coyote successfully:', response.data);
     } catch (error) {
       console.error('Error placing bid:', error);

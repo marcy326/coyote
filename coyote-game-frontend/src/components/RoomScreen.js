@@ -7,6 +7,7 @@ import { v4 as uuidv4 } from 'uuid';
 const RoomScreen = ({ roomId, onStartOfflineGame, onStartOnlineGame, onLeaveRoom }) => {
   const dispatch = useDispatch();
   const players = useSelector((state) => state.game.players);
+  const playerId = useSelector((state) => state.game.playerId);
   const playerName = useSelector((state) => state.game.playerName);
   const gameInProgress = useSelector((state) => state.game.gameInProgress);
   const currentTurn = useSelector((state) => state.game.currentTurn);
@@ -14,18 +15,6 @@ const RoomScreen = ({ roomId, onStartOfflineGame, onStartOnlineGame, onLeaveRoom
   const [error, setError] = useState(null);
   const [copySuccess, setCopySuccess] = useState('');
   const wsRef = useRef(null);
-
-  const leaveRoom = async () => {
-    try {
-      const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/room/${roomId}/leave`, {}, { withCredentials: true });
-      console.log('Leave room response:', response.data);
-      dispatch(updatePlayers(response.data.players)); // サーバーから返された最新のプレイヤーリストで更新
-      onLeaveRoom();
-    } catch (error) {
-      console.error('Error leaving room:', error);
-      setError('部屋から退出できませんでした。もう一度お試しください。');
-    }
-  };
 
   useEffect(() => {
     const fetchPlayers = async () => {
@@ -131,6 +120,18 @@ const RoomScreen = ({ roomId, onStartOfflineGame, onStartOnlineGame, onLeaveRoom
       console.error('Could not copy text: ', err);
       setCopySuccess('コピーに失敗しました');
     });
+  };
+
+  const leaveRoom = async () => {
+    try {
+      const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/room/${roomId}/leave`, {}, { withCredentials: true });
+      console.log('Leave room response:', response.data);
+      dispatch(updatePlayers(response.data.players)); // サーバーから返された最新のプレイヤーリストで更新
+      onLeaveRoom();
+    } catch (error) {
+      console.error('Error leaving room:', error);
+      setError('部屋から退出できませんでした。' + error.response.data.detail);
+    }
   };
 
   console.log(`Rendering RoomScreen: gameInProgress = ${gameInProgress}`);
