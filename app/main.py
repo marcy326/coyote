@@ -80,13 +80,13 @@ async def join_room(
         else:
             print(f"No active WebSocket connections for room {room_id}")
 
-        return {"message": "Joined room successfully", "gameInProgress": room.game_in_progress}
+        return {"message": "Joined room successfully", "gameInProgress": room.game_in_progress, "playerId": player_id}
     except ValueError as e:
         print(f"Error joining room: {str(e)}")  # デバッグ用ログ
         raise HTTPException(status_code=400, detail=str(e))
 
 @app.post("/room/{room_id}/leave")
-async def leave_room(room_id: str, player_id: str = Cookie(default=None)):
+async def leave_room(room_id: str, player_id: str = Body(..., embed=True)):
     if room_id not in rooms:
         raise HTTPException(status_code=404, detail="部屋が存在しません")
     if not player_id:

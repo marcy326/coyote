@@ -2,6 +2,7 @@ import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
   roomId: null,
+  playerId: '',
   playerName: '',
   players: [],
   gameStarted: false,
@@ -19,6 +20,9 @@ const gameSlice = createSlice({
   reducers: {
     setRoomId(state, action) {
       state.roomId = action.payload;
+    },
+    setPlayerId(state, action) {
+      state.playerId = action.payload;
     },
     setPlayerName(state, action) {
       state.playerName = action.payload;
@@ -80,6 +84,7 @@ const gameSlice = createSlice({
 
 export const {
   setRoomId,
+  setPlayerId,
   setPlayerName,
   setCurrentTurn,
   updatePlayers,

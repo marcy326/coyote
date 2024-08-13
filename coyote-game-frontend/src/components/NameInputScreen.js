@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
-import { setPlayerName } from '../store/gameSlice';
+import { setPlayerName, setPlayerId } from '../store/gameSlice';
 import axios from 'axios';
 
 const NameInputScreen = ({ roomId, onNameEntered }) => {
@@ -36,11 +36,14 @@ const NameInputScreen = ({ roomId, onNameEntered }) => {
       return;
     }
     try {
-      await axios.post(`${process.env.REACT_APP_API_BASE_URL}/room/${roomId}/join`, null, {
+      const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/room/${roomId}/join`, null, {
         params: { player_name: name },
         withCredentials: true
       });
+      const playerId = response.data.playerId;
+      console.log(playerId);
       dispatch(setPlayerName(name));
+      dispatch(setPlayerId(response.data.playerId));
       onNameEntered();
     } catch (error) {
       console.error('Error joining room:', error);

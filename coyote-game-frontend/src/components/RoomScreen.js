@@ -124,7 +124,7 @@ const RoomScreen = ({ roomId, onStartOfflineGame, onStartOnlineGame, onLeaveRoom
 
   const leaveRoom = async () => {
     try {
-      const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/room/${roomId}/leave`, {}, { withCredentials: true });
+      const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/room/${roomId}/leave`, { player_id: playerId }, { withCredentials: true });
       console.log('Leave room response:', response.data);
       dispatch(updatePlayers(response.data.players)); // サーバーから返された最新のプレイヤーリストで更新
       onLeaveRoom();
