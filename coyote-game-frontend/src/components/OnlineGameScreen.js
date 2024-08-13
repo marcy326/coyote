@@ -130,14 +130,12 @@ const OnlineGameScreen = ({ roomId, onGameEnd }) => {
         </ul>
         <div className="mt-4">
           <h3 className="text-lg mb-2">現在の宣言: {lastBid}</h3>
-          <h3 className="text-lg mb-2">宣言する数字: {biddingNum}</h3>
+          {isMyTurn && <h3 className="text-lg mb-2">宣言する数字: {biddingNum}</h3>}
           <div className="button-group">
             <button onClick={decrementBid} className="bg-gray text-white p-2 rounded" disabled={!isMyTurn || coyoteResult}>-</button>
             <button onClick={incrementBid} className="bg-gray text-white p-2 rounded" disabled={!isMyTurn || coyoteResult}>+</button>
             <button onClick={handleBid} className="bg-green text-white p-2 rounded" disabled={!isMyTurn || coyoteResult}>決定</button>
-            {isCoyoteAvailable && (
-              <button onClick={handleCoyote} className="bg-red text-white p-2 rounded" disabled={!isMyTurn || coyoteResult}>コヨーテ</button>
-            )}
+            <button onClick={handleCoyote} className="bg-red text-white p-2 rounded" disabled={!isMyTurn || coyoteResult || !isCoyoteAvailable}>コヨーテ</button>
           </div>
         </div>
         {!isMyTurn && <p className="text-red mt-2">現在の手番: {players[currentTurn]?.name}</p>}
