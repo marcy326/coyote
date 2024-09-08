@@ -108,7 +108,7 @@ const GameScreen = ({ roomId, onGameEnd }) => {
       <div className="card">
         {cardButtonVisible && (
           <button onClick={handleShowCard} className="bg-blue text-white p-2 rounded mt-4">
-            Show Card
+            ゲームスタート
           </button>
         )}
         {countdown !== null && (

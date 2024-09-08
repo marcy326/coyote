@@ -40,7 +40,7 @@ const InitialScreen = ({ onRoomCreated, onRoomJoined }) => {
       </div>
       <div className="card">
         <button onClick={createRoom} className="bg-blue text-white p-2 rounded">
-          Create Room
+          部屋を作成
         </button>
         <div className="separator"></div>
         <input
@@ -51,7 +51,7 @@ const InitialScreen = ({ onRoomCreated, onRoomJoined }) => {
           className="border p-2 mb-4"
         />
         <button onClick={joinRoom} className="bg-green text-white p-2 rounded">
-          Join Room
+          部屋に参加
         </button>
         {error && <p className="text-red mt-2">{error}</p>}
       </div>
