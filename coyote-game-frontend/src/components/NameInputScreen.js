@@ -66,7 +66,7 @@ const NameInputScreen = ({ roomId, onNameEntered }) => {
           className="border p-2 mr-2"
         />
         <button onClick={joinRoom} className="bg-green text-white p-2 rounded">
-          部屋に参加
+          入室
         </button>
       </div>
     </div>
